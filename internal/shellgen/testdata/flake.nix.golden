@@ -1,0 +1,58 @@
+{
+  description = "A synopkg.github.io/devboxell";
+
+  inputs = {
+    nixpkgs.url = "https://github.com/nixos/nixpkgs/archive/b9c00c1d41ccd6385da243415299b39aa73357be.tar.gz";
+    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:NixOS/nixpkgs/b9c00c1d41ccd6385da243415299b39aa73357be";
+  };
+
+  outputs = { 
+    self,
+    nixpkgs,
+    nixpkgs,
+    flake-utils 
+  }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = (import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        });
+        nixpkgs-pkgs = (import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+          config.permittedInsecurePackages = [
+          ];
+        });
+      in
+      {
+        devShell = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            nixpkgs-pkgs.php
+            nixpkgs-pkgs.php81Packages.composer
+            nixpkgs-pkgs.php81Extensions.blackfire
+            nixpkgs-pkgs.flyctl
+            nixpkgs-pkgs.postgresql
+            nixpkgs-pkgs.tree
+            nixpkgs-pkgs.git
+            nixpkgs-pkgs.zsh
+            nixpkgs-pkgs.openssh
+            nixpkgs-pkgs.vim
+            nixpkgs-pkgs.sqlite
+            nixpkgs-pkgs.jq
+            nixpkgs-pkgs.delve
+            nixpkgs-pkgs.ripgrep
+            nixpkgs-pkgs.shellcheck
+            nixpkgs-pkgs.terraform
+            nixpkgs-pkgs.xz
+            nixpkgs-pkgs.zstd
+            nixpkgs-pkgs.gnupg
+            nixpkgs-pkgs.go_1_20
+            nixpkgs-pkgs.python3
+            nixpkgs-pkgs.graphviz
+          ];
+        };
+      }
+    );
+}

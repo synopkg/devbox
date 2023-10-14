@@ -1,0 +1,56 @@
+{
+   description = "A synopkg.github.io/devboxell";
+
+   inputs = {
+     nixpkgs.url = "{{ .NixpkgsInfo.URL }}";
+     {{- range .FlakeInputs }}
+     {{.Name}}.url = "{{.URLWithCaching}}";
+     {{- end }}
+   };
+
+   outputs = {
+     self,
+     nixpkgs,
+     {{- range .FlakeInputs }}
+     {{.Name}},
+     {{- end }}
+   }:
+      let
+        pkgs = nixpkgs.legacyPackages.{{ .System }};
+        {{- range $_, $flake := .FlakeInputs }}
+        {{- if .IsNixpkgs }}
+        {{.PkgImportName}} = (import {{.Name}} {
+          system = "{{ $.System }}";
+          config.allowUnfree = true;
+          config.permittedInsecurePackages = [
+            {{- range $flake.Packages }}
+            {{- if .AllowInsecure }}
+            "{{ .StoreName }}"
+            {{- end }}
+            {{- end }}
+          ];
+        });
+        {{- end }}
+        {{- end }}
+      in
+      {
+        devShells.{{ .System }}.default = pkgs.mkShell {
+          buildInputs = [
+            {{- range .Packages }}
+            {{- if .IsInBinaryCache }}
+            (builtins.fetchClosure{
+              fromStore = "{{ $.BinaryCache }}";
+              fromPath = "{{ .InputAddressedPath }}";
+              inputAddressed = true;
+            })
+            {{- end }}
+            {{- end }}
+            {{- range .FlakeInputs }}
+            {{- range .BuildInputs }}
+            {{.}}
+            {{- end }}
+            {{- end }}
+          ];
+        };
+      };
+ }

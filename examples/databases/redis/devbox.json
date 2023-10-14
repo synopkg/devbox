@@ -1,0 +1,11 @@
+{
+  "packages": [
+    "redis"
+  ],
+  "shell": {
+    "init_hook": "",
+    "scripts": {
+      "redis-cli": "redis-cli"
+    }
+  }
+}

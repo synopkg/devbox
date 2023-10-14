@@ -1,0 +1,8 @@
+use_devbox() {
+    watch_file devbox.json
+    eval "$(synopkg.github.io/devboxellenv --init-hook --install{{ if .EnvFlag }} {{ .EnvFlag }}{{ end }})"
+}
+use devbox
+{{ if .EnvFile }}
+dotenv_if_exists {{ .EnvFile }}
+{{ end }}

@@ -1,0 +1,8 @@
+{
+  "packages": [
+    "apacheHttpd@latest"
+  ],
+  "shell": {
+    "init_hook": []
+  }
+}

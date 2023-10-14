@@ -1,0 +1,40 @@
+{
+  "packages": [
+    "python@latest",
+    "python311Packages.pip@latest",
+    "openssl@latest",
+    "postgresql@latest"
+  ],
+  "env": {
+    "PGPORT": "5434"
+  },
+  "shell": {
+    "init_hook": [
+      ". $VENV_DIR/bin/activate",
+      "pip install -r requirements.txt --use-pep517"
+    ],
+    "scripts": {
+      "create_db": [
+        "echo \"Creating DB\"",
+        "dropdb --if-exists todo_db",
+        "createdb todo_db",
+        "psql todo_db -c \"CREATE USER todo_user WITH PASSWORD 'secretpassword';\"",
+        "python todo_project/manage.py makemigrations",
+        "python todo_project/manage.py migrate"
+      ],
+      "initdb": [
+        "initdb"
+      ],
+      "server": [
+        "python todo_project/manage.py runserver"
+      ],
+      "test": [
+        "initdb",
+        "devbox services start",
+        "devbox run create_db",
+        "python todo_project/manage.py test",
+        "devbox services stop"
+      ]
+    }
+  }
+}

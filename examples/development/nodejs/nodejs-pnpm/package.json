@@ -1,0 +1,9 @@
+{
+  "name": "nodejs-pnpm",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo building...",
+    "start": "node index.js"
+  },
+  "dependencies": {}
+}

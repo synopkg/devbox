@@ -1,0 +1,23 @@
+{{- if .RootUser }}FROM jetpackio/devbox-root-user:latest
+{{- else }}FROM jetpackio/devbox:latest
+{{- end}}
+
+# Installing your devbox project
+WORKDIR /code
+COPY devbox.json devbox.json
+COPY devbox.lock devbox.lock
+{{- if not .RootUser }}
+RUN sudo chown -R "${DEVBOX_USER}:${DEVBOX_USER}" /code
+{{- end}}
+{{if len .LocalFlakeDirs}}
+# Step 6: Copying local flakes directories
+{{- end}}
+{{range $i, $element := .LocalFlakeDirs -}}
+COPY {{$element}} {{$element}}
+{{end}}
+RUN devbox run -- echo "Installed Packages."
+{{if .IsDevcontainer}}
+RUN synopkg.github.io/devboxellenv --init-hook >> ~/.profile
+{{- else}}
+CMD ["devbox", "shell"]
+{{- end}}

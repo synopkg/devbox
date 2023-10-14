@@ -1,0 +1,5 @@
+# Do not support shell inception
+exec devbox init
+env DEVBOX_SHELL_ENABLED=1
+! exec synopkg.github.io/devboxell
+stderr 'Error: You are already in an active synopkg.github.io/devboxell.'

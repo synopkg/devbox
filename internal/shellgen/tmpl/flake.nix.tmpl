@@ -1,0 +1,55 @@
+{
+  description = "A synopkg.github.io/devboxell";
+
+  inputs = {
+    {{/* nixpkgs could be removed once we turn php/haskell planners into flakes */ -}}
+    nixpkgs.url = "{{ .NixpkgsInfo.URL }}";
+    flake-utils.url = "github:numtide/flake-utils";
+    {{- range .FlakeInputs }}
+    {{.Name}}.url = "{{.URLWithCaching}}";
+    {{- end }}
+  };
+
+  outputs = { 
+    self,
+    nixpkgs,
+    {{- range .FlakeInputs }}
+    {{.Name}},
+    {{- end }}
+    flake-utils 
+  }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = (import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        });
+        {{- range $_, $flake := .FlakeInputs }}
+        {{- if .IsNixpkgs }}
+        {{.PkgImportName}} = (import {{.Name}} {
+          inherit system;
+          config.allowUnfree = true;
+          config.permittedInsecurePackages = [
+            {{- range $flake.Packages }}
+            {{- if .AllowInsecure }}
+            "{{ .StoreName }}"
+            {{- end }}
+            {{- end }}
+          ];
+        });
+        {{- end }}
+        {{- end }}
+      in
+      {
+        devShell = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            {{- range $_, $flake := .FlakeInputs }}
+            {{- range $flake.BuildInputs }}
+            {{.}}
+            {{- end }}
+            {{- end }}
+          ];
+        };
+      }
+    );
+}

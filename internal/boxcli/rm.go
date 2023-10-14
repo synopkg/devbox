@@ -1,0 +1,43 @@
+// Copyright 2023 Jetpack Technologies Inc and contributors. All rights reserved.
+// Use of this source code is governed by the license in the LICENSE file.
+
+package boxcli
+
+import (
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+	"github.com/synopkg/devbox"
+	"github.com/synopkg/devbox/internal/impl/devopt"
+)
+
+type removeCmdFlags struct {
+	config configFlags
+}
+
+func removeCmd() *cobra.Command {
+	flags := removeCmdFlags{}
+	command := &cobra.Command{
+		Use:     "rm <pkg>...",
+		Short:   "Remove a package from your devbox",
+		Args:    cobra.MinimumNArgs(1),
+		PreRunE: ensureNixInstalled,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runRemoveCmd(cmd, args, flags)
+		},
+	}
+
+	flags.config.register(command)
+	return command
+}
+
+func runRemoveCmd(cmd *cobra.Command, args []string, flags removeCmdFlags) error {
+	box, err := devbox.Open(&devopt.Opts{
+		Dir:    flags.config.path,
+		Stderr: cmd.ErrOrStderr(),
+	})
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return box.Remove(cmd.Context(), args...)
+}
